@@ -11,10 +11,6 @@ namespace _netCoreBackend.Models
         public string JobTitle {get;set;}
         public long? PhoneNumber {get;set;}
 
-        /* *************** */
-        
-        public ICollection<Group> Groups{get;set;}
-        public ICollection<SharedTasks> SharedTasks {get;set;}
     }
 
 }

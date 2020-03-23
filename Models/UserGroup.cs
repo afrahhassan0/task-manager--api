@@ -9,14 +9,14 @@ namespace _netCoreBackend.Models
         public UserGroup(){}
         [Key]
         [Required]
-        public int Member_ID {get;set;}
+        public string MemberUsername {get;set;}
         
         [Key]
         [Required]
-        public int Group_ID {get;set;}
+        public int GroupID {get;set;}
 
         public Group Group {get;set;}
-        public User User {get;set;}
+        public Credentials UserAccount {get;set;}
         /* *************** */
 
         //navigation properties:

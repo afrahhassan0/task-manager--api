@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using _netCoreBackend.Handlers;
 using _netCoreBackend.Models;
-using _netCoreBackend.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
-using Task = _netCoreBackend.Models.Task;
+using Microsoft.Extensions.Options;
+using UserTask = _netCoreBackend.Models.Task;
+
 
 namespace _netCoreBackend.Controllers
 {
@@ -19,39 +18,41 @@ namespace _netCoreBackend.Controllers
     public class PrivateTasksController : Controller
     {
         private readonly ManagerContext _ctx;
+        private readonly JWTSettings _jwtSettings;
 
-        public PrivateTasksController(ManagerContext ctx)
+        public PrivateTasksController(ManagerContext ctx , IOptions<JWTSettings> jwtSettings)
         {
             _ctx = ctx;
+            _jwtSettings = jwtSettings.Value;
         }
         
         [HttpGet]
-        public  IActionResult GetPrivateTasks()
+        public async Task<IActionResult> GetPrivateTasks()
         {
-            string email = HttpContext.User.Identity.Name;
-            var tasks = _ctx.PrivateTasks
-                .Include(task => task.User)
-                .Where(t => t.User.Email == email)
-                .ToList();
-                
+            string username = HttpContext.User.Identity.Name;
+
+            var user = await _ctx.Credentials.FindAsync( username );
+            
+            _ctx.Entry(user)
+                .Collection(cr=> cr.PrivateTasks )
+                .Load();
+
             var tasksDTO = new List<PrivateTaskDTO>();
             
-            tasks.ForEach( task => tasksDTO.Add( new PrivateTaskDTO{ Title = task.Title, CreatedDate = task.CreatedDate} ) );
-
+            user.PrivateTasks.ForEach( task => tasksDTO.Add( new PrivateTaskDTO{ Title = task.Title, CreatedDate = task.CreatedDate} ) );
+            
             return Ok( 
                     new
                     {
                         tasks = tasksDTO,
                         count = tasksDTO.Count()
-                    }
-                );
+                    });
         }
 
         [HttpGet("task/{id:int}") ]
-        public async Task<IActionResult> GetAPrivateTask(int id)
+        public IActionResult GetAPrivateTask(int id)
         {
-            var task = await _ctx.PrivateTasks
-                .SingleOrDefaultAsync( pt=> pt.SharedTaskId == id );
+            var task = RetreiveTask(id);
 
             if (task == null)
             {
@@ -69,10 +70,10 @@ namespace _netCoreBackend.Controllers
                 return BadRequest();
             }
 
-            var requestedTask = await _ctx.PrivateTasks.
-                SingleOrDefaultAsync(t => t.SharedTaskId == id);
+            var requestedTask = await _ctx.PrivateTasks
+                .SingleOrDefaultAsync(t => t.SharedTaskId == id);
 
-            if (requestedTask == null || id != requestedTask.OwnerId) 
+            if (requestedTask == null) 
             {
                 return NotFound();
             }
@@ -94,58 +95,66 @@ namespace _netCoreBackend.Controllers
             return NoContent();
 
         }
+        
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public IActionResult DeleteTask(int id)
         {
-            var task = await _ctx.PrivateTasks
-                .SingleOrDefaultAsync(t => t.SharedTaskId == id);
+            var task = RetreiveTask(id);
 
             if (task == null)
             {
                 return NotFound();
             }
-
-            return Ok(task);
+            
+            return Ok(task.Title);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreatePrivateTask([FromForm] PrivateTask task)
         {
-            if (task.Status == null)
-            {
-                task.Status = Status.Open;
-            }
-            
             PrivateTask newTask = new PrivateTask()
             {
                 Title = task.Title,
                 CreatedDate = task.CreatedDate,
                 Description = task.Description,
                 Checklists = task.Checklists,
+                Status = task.Status 
             };
 
-            var email = HttpContext.User.Identity.Name;
+            var username = HttpContext.User.Identity.Name;
 
-            var user = await _ctx.Users
-                .SingleOrDefaultAsync(u => u.Email ==email);
+            var user = await _ctx.Credentials
+                .SingleOrDefaultAsync(u => u.Username == username);
             
             _ctx.Entry(user)
-                .Collection(u => u.PrivateTasks)
+                .Reference(u => u.PrivateTasks)
                 .Load();
             
-            
-            
             if(!user.PrivateTasks.Any())
-            {
                 user.PrivateTasks = new List<PrivateTask>();
-                user.PrivateTasks.Add(task);
-            }
+               
+            user.PrivateTasks.Add(newTask);
 
             await _ctx.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetAPrivateTask), new {id = newTask.SharedTaskId }, newTask);
 
+        }
+
+        private UserTask RetreiveTask(int taskId)
+        {
+            string username = HttpContext.User.Identity.Name;
+
+            var user =  _ctx.Credentials.Single( cr => cr.Username == username );
+            
+            //validate that requested task belong to that user
+            
+            _ctx.Entry(user)
+                .Reference(cr=> cr.PrivateTasks)
+                .Load();
+
+            return user.PrivateTasks.SingleOrDefault(t=>t.SharedTaskId == taskId);
         }
 
         private bool TaskExists(int id) => 

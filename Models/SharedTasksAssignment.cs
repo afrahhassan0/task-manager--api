@@ -12,7 +12,7 @@ namespace _netCoreBackend.Models
         public int SharedTaskId {get;set;}
         [Key]
         [Required]
-        public int MemberShipUserId{get;set;}
+        public string MemberShipUserUsername{get;set;}
         [Key]
         [Required]
         public int MembershipGroupId{get;set;}

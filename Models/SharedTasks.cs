@@ -16,9 +16,9 @@ namespace _netCoreBackend.Models
         /* ************** */
         
         [JsonIgnore]
-        public int AdminId {get;set;}
+        public string AdminUsername {get;set;}
         [JsonIgnore]
-        public Admin Admin {get;set;}
+        public Credentials AdminAccount {get;set;}
 
         //navigation properties:
         public ICollection<SharedTaskAssignment> SharedTaskAssignments {get;set;}

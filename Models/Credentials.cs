@@ -29,6 +29,17 @@ namespace _netCoreBackend.Models
         public int User_Id{get;set;}
         [JsonIgnore]
         public User User{get;set;}
+        
+        [JsonIgnore]
+        public ICollection<Group> Groups{get;set;}
+        
+        [JsonIgnore]
+        public ICollection<SharedTasks> SharedTasks {get;set;}
+
+        //Memberships!
+        public ICollection<UserGroup> Memberships {get;set;}
+        public List<PrivateTask> PrivateTasks {get;set;}
+        
     }
 }
 

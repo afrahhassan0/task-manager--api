@@ -22,15 +22,15 @@ namespace _netCoreBackend.Models
         public string CreatedDate {get;set;}
         #nullable enable
         [MaxLength(500)]
-        public string? description {get;set;}
+        public string? Description {get;set;}
         /* *********************** */
 
         //foreign key and navigation properties
         [Required]
         [JsonIgnore]
-        public int AdminId {get;set;}
+        public string AdminUsername {get;set;}
         [JsonIgnore]
-        public Admin Admin {get;set;} 
+        public Credentials AdminAccount {get;set;} 
 
 
         //Membership:

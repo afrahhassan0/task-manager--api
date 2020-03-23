@@ -33,13 +33,11 @@ namespace _netCoreBackend.Models
 
         //Collection Navigation Properties:
         
-        public List<PrivateTask> PrivateTasks {get;set;}
+        
         
         public ICollection<Credentials> Credentials {get;set;}
 
-        //Memberships!
-        
-        public ICollection<UserGroup> Memberships {get;set;}
+
         
     }
 }

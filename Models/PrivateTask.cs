@@ -9,9 +9,9 @@ namespace _netCoreBackend.Models
      
         //Foreign key and reference navigation property:
         [JsonIgnore]
-        public int OwnerId {get;set;}
+        public string AdminUsername {get;set;}
         [JsonIgnore]
-        public User User {get;set;}        
+        public Credentials AdminAccount {get;set;}        
         
     }
 }
