@@ -20,7 +20,6 @@ namespace _netCoreBackend.Models
         public DbSet<SharedTasks> SharedTasks {get;set;}
         public DbSet<Group> Groups {get;set;}
         public DbSet<UserGroup> Memberships {get;set;}
-        public DbSet<SharedTaskAssignment> SharedTaskAssignments {get;set;}
         public DbSet<Credentials> Credentials {get;set;}
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,16 +41,15 @@ namespace _netCoreBackend.Models
 
             //private task
             modelBuilder.Entity<PrivateTask>()
-                        .HasOne( pt => pt.AdminAccount )
+                        .HasOne( pt => pt.OwnerAccount )
                         .WithMany( u => u.PrivateTasks )
-                        .HasForeignKey(pt => pt.AdminUsername);
+                        .HasForeignKey(pt => pt.OwnerId);
             //shared task
             modelBuilder.Entity<SharedTasks>()
-                        .HasOne(st => st.AdminAccount)
-                        .WithMany( account => account.SharedTasks )
-                        .HasForeignKey( st => st.AdminUsername );
+                .HasOne(st => st.Group)
+                .WithMany(g => g.SharedTasks)
+                .HasForeignKey(st => st.GroupId);
 
-                
             //group
             modelBuilder.Entity<Group>()
                         .HasOne(g => g.AdminAccount)
@@ -82,36 +80,11 @@ namespace _netCoreBackend.Models
                         .WithMany(g=> g.Memberships)
                         .HasForeignKey(ug => ug.GroupID);
             
-            //SharedTaskAssignment many to many relationship:
-                //composite key:
-            modelBuilder.Entity<SharedTaskAssignment>()
-                        .HasKey( shared => new { shared.SharedTaskId , shared.MembershipGroupId , shared.MemberShipUserUsername });
-            
-                //2 one to many relationships
-                    //from shared to usergroup
-            modelBuilder.Entity<SharedTaskAssignment>()
-                        .HasOne( shared => shared.Membership )
-                        .WithMany( ug => ug.SharedTaskAssignments )
-                        .HasForeignKey( shared => new { shared.MembershipGroupId , shared.MemberShipUserUsername });
-
-                    //from shared to sharedTask
-            modelBuilder.Entity<SharedTaskAssignment>()
-                        .HasOne(shared => shared.SharedTask)
-                        .WithMany( task => task.SharedTaskAssignments )
-                        .HasForeignKey( shared => shared.SharedTaskId );
-
             
             //setting default to user custom color propety
             modelBuilder.Entity<User>()
                         .Property( u => u.CustomBackgroundColor )
                         .HasDefaultValue("#e1e1e1");
-            
-            
-
-           
-                        
-            
-
         }
 
     }

@@ -15,7 +15,7 @@ namespace _netCoreBackend.Models
         public int GroupId {get;set;}
         
         [Required]
-        [MaxLength(25)]
+        [MaxLength(50)]
         public string title{get;set;}
         [Required]
         [Column(TypeName="varchar(10)")]
@@ -26,8 +26,8 @@ namespace _netCoreBackend.Models
         /* *********************** */
 
         //foreign key and navigation properties
-        [Required]
-        [JsonIgnore]
+        
+        
         public string AdminUsername {get;set;}
         [JsonIgnore]
         public Credentials AdminAccount {get;set;} 
@@ -36,6 +36,8 @@ namespace _netCoreBackend.Models
         //Membership:
         [JsonIgnore]
         public ICollection<UserGroup> Memberships {get;set;}
+        [JsonIgnore]
+        public List<SharedTasks> SharedTasks { get; set; }
     }
 
 }

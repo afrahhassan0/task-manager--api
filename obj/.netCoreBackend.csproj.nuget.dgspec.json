@@ -40,6 +40,10 @@
               "target": "Package",
               "version": "[3.1.2, )"
             },
+            "Microsoft.AspNetCore.Cors": {
+              "target": "Package",
+              "version": "(, )"
+            },
             "Microsoft.EntityFrameWorkCore": {
               "target": "Package",
               "version": "[3.1.2, )"

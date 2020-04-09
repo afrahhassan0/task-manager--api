@@ -31,21 +31,16 @@ namespace _netCoreBackend.Controllers
         {
             string username = HttpContext.User.Identity.Name;
 
-            var user = await _ctx.Credentials.FindAsync( username );
-            
-            _ctx.Entry(user)
-                .Collection(cr=> cr.PrivateTasks )
-                .Load();
+            var user = await _ctx.Credentials
+                .AsNoTracking()
+                .Include(c => c.PrivateTasks)
+                .FirstOrDefaultAsync(c => c.Username == username);
 
-            var tasksDTO = new List<PrivateTaskDTO>();
-            
-            user.PrivateTasks.ForEach( task => tasksDTO.Add( new PrivateTaskDTO{ Title = task.Title, CreatedDate = task.CreatedDate} ) );
-            
             return Ok( 
                     new
                     {
-                        tasks = tasksDTO,
-                        count = tasksDTO.Count()
+                        tasks = user.PrivateTasks,
+                        count = user.PrivateTasks.Count()
                     });
         }
 
@@ -63,25 +58,26 @@ namespace _netCoreBackend.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, [FromForm]PrivateTask task)
+        public async Task<IActionResult> UpdateTask(int id, PrivateTask task)
         {
-            if (id != task.SharedTaskId)
+            if (id != task.TaskId)
             {
                 return BadRequest();
             }
 
             var requestedTask = await _ctx.PrivateTasks
-                .SingleOrDefaultAsync(t => t.SharedTaskId == id);
+                .SingleOrDefaultAsync(t => t.TaskId == id);
 
             if (requestedTask == null) 
             {
                 return NotFound();
             }
             
+            //picking desired attributes in case id or ownership was wrongly changed
             requestedTask.Title = task.Title;
             requestedTask.Description = task.Description;
             requestedTask.Checklists = task.Checklists;
-            requestedTask.Status = task.Status;
+            
 
             try
             {
@@ -97,26 +93,34 @@ namespace _netCoreBackend.Controllers
         }
         
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteTask(int id)
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteTask(int id)
         {
+            string username = HttpContext.User.Identity.Name;
             var task = RetreiveTask(id);
 
             if (task == null)
             {
                 return NotFound();
             }
-            
+
+            var privateTasks = _ctx.PrivateTasks
+                    .First(t => t.TaskId == id);
+
+            _ctx.PrivateTasks.Remove(privateTasks);
+
+            await _ctx.SaveChangesAsync();
+
             return Ok(task.Title);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePrivateTask([FromForm] PrivateTask task)
+        public async Task<IActionResult> CreatePrivateTask(PrivateTask task)
         {
             PrivateTask newTask = new PrivateTask()
             {
                 Title = task.Title,
-                CreatedDate = task.CreatedDate,
+                Deadline = task.Deadline,
                 Description = task.Description,
                 Checklists = task.Checklists,
                 Status = task.Status 
@@ -128,7 +132,7 @@ namespace _netCoreBackend.Controllers
                 .SingleOrDefaultAsync(u => u.Username == username);
             
             _ctx.Entry(user)
-                .Reference(u => u.PrivateTasks)
+                .Collection(u => u.PrivateTasks)
                 .Load();
             
             if(!user.PrivateTasks.Any())
@@ -138,7 +142,7 @@ namespace _netCoreBackend.Controllers
 
             await _ctx.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetAPrivateTask), new {id = newTask.SharedTaskId }, newTask);
+            return CreatedAtAction(nameof(GetAPrivateTask), new {id = newTask.TaskId }, newTask);
 
         }
 
@@ -151,14 +155,14 @@ namespace _netCoreBackend.Controllers
             //validate that requested task belong to that user
             
             _ctx.Entry(user)
-                .Reference(cr=> cr.PrivateTasks)
+                .Collection(cr=> cr.PrivateTasks)
                 .Load();
 
-            return user.PrivateTasks.SingleOrDefault(t=>t.SharedTaskId == taskId);
+            return user.PrivateTasks.SingleOrDefault(t=>t.TaskId == taskId);
         }
 
         private bool TaskExists(int id) => 
-            _ctx.PrivateTasks.Any(t => t.SharedTaskId == id);
+            _ctx.PrivateTasks.Any(t => t.TaskId == id);
 
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _netCoreBackend.Models;
@@ -12,9 +13,10 @@ using _netCoreBackend.Models.Objects;
 namespace _netCoreBackend.Migrations
 {
     [DbContext(typeof(ManagerContext))]
-    partial class ManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20200404112402_Name tweaks")]
+    partial class Nametweaks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,14 +73,32 @@ namespace _netCoreBackend.Migrations
 
                     b.Property<string>("title")
                         .IsRequired()
-                        .HasColumnType("character varying(50)")
-                        .HasMaxLength(50);
+                        .HasColumnType("character varying(25)")
+                        .HasMaxLength(25);
 
                     b.HasKey("GroupId");
 
                     b.HasIndex("AdminUsername");
 
                     b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("_netCoreBackend.Models.SharedTaskAssignment", b =>
+                {
+                    b.Property<int>("SharedTaskId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MembershipGroupId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MemberShipUserUsername")
+                        .HasColumnType("character varying(15)");
+
+                    b.HasKey("SharedTaskId", "MembershipGroupId", "MemberShipUserUsername");
+
+                    b.HasIndex("MembershipGroupId", "MemberShipUserUsername");
+
+                    b.ToTable("SharedTaskAssignments");
                 });
 
             modelBuilder.Entity("_netCoreBackend.Models.Task", b =>
@@ -190,15 +210,11 @@ namespace _netCoreBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.Property<string>("CredentialsUsername")
+                    b.Property<string>("AssignedBy")
+                        .IsRequired()
                         .HasColumnType("character varying(15)");
 
-                    b.Property<int>("GroupId")
-                        .HasColumnType("integer");
-
-                    b.HasIndex("CredentialsUsername");
-
-                    b.HasIndex("GroupId");
+                    b.HasIndex("AssignedBy");
 
                     b.HasDiscriminator().HasValue("SharedTasks");
                 });
@@ -236,6 +252,21 @@ namespace _netCoreBackend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("_netCoreBackend.Models.SharedTaskAssignment", b =>
+                {
+                    b.HasOne("_netCoreBackend.Models.SharedTasks", "SharedTask")
+                        .WithMany("SharedTaskAssignments")
+                        .HasForeignKey("SharedTaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("_netCoreBackend.Models.UserGroup", "Membership")
+                        .WithMany("SharedTaskAssignments")
+                        .HasForeignKey("MembershipGroupId", "MemberShipUserUsername")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("_netCoreBackend.Models.UserGroup", b =>
                 {
                     b.HasOne("_netCoreBackend.Models.Group", "Group")
@@ -260,13 +291,9 @@ namespace _netCoreBackend.Migrations
 
             modelBuilder.Entity("_netCoreBackend.Models.SharedTasks", b =>
                 {
-                    b.HasOne("_netCoreBackend.Models.Credentials", null)
+                    b.HasOne("_netCoreBackend.Models.Credentials", "AdminAccount")
                         .WithMany("SharedTasks")
-                        .HasForeignKey("CredentialsUsername");
-
-                    b.HasOne("_netCoreBackend.Models.Group", "Group")
-                        .WithMany("SharedTasks")
-                        .HasForeignKey("GroupId")
+                        .HasForeignKey("AssignedBy")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

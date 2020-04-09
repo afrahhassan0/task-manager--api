@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using _netCoreBackend.Models;
@@ -12,9 +13,10 @@ using _netCoreBackend.Models.Objects;
 namespace _netCoreBackend.Migrations
 {
     [DbContext(typeof(ManagerContext))]
-    partial class ManagerContextModelSnapshot : ModelSnapshot
+    [Migration("20200405201204_Fixed relation")]
+    partial class Fixedrelation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,13 +192,14 @@ namespace _netCoreBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
-                    b.Property<string>("CredentialsUsername")
+                    b.Property<string>("AssignedBy")
+                        .IsRequired()
                         .HasColumnType("character varying(15)");
 
                     b.Property<int>("GroupId")
                         .HasColumnType("integer");
 
-                    b.HasIndex("CredentialsUsername");
+                    b.HasIndex("AssignedBy");
 
                     b.HasIndex("GroupId");
 
@@ -260,9 +263,11 @@ namespace _netCoreBackend.Migrations
 
             modelBuilder.Entity("_netCoreBackend.Models.SharedTasks", b =>
                 {
-                    b.HasOne("_netCoreBackend.Models.Credentials", null)
+                    b.HasOne("_netCoreBackend.Models.Credentials", "AdminAccount")
                         .WithMany("SharedTasks")
-                        .HasForeignKey("CredentialsUsername");
+                        .HasForeignKey("AssignedBy")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("_netCoreBackend.Models.Group", "Group")
                         .WithMany("SharedTasks")

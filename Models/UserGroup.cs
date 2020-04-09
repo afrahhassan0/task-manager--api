@@ -18,9 +18,5 @@ namespace _netCoreBackend.Models
         public Group Group {get;set;}
         public Credentials UserAccount {get;set;}
         /* *************** */
-
-        //navigation properties:
-        public ICollection<SharedTaskAssignment> SharedTaskAssignments {get;set;}
-
     }
 }

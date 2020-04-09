@@ -10,18 +10,20 @@ namespace _netCoreBackend.Models
     {
         [Key]
         [Required]
-        public int SharedTaskId {get;set;}
+        public int TaskId {get;set;}
         public string Title{get;set;}
 
         [Column(TypeName = "varchar(15)")]
-        public string CreatedDate {get;set;}
+        public string Deadline {get;set;}
 
         #nullable enable
         [MaxLength(500)]
         public string? Description{get;set;}
-        public Status? Status {get;set;}
+        public Status Status {get;set;}
 
         [Column(TypeName = "jsonb")]
         public List<Checklist>? Checklists{get;set;}
+        
+        
     }
 }

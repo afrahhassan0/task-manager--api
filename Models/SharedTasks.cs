@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace _netCoreBackend.Models
@@ -8,20 +9,15 @@ namespace _netCoreBackend.Models
     {
         public SharedTasks(){}
 
-        [Column(TypeName = "varchar(15)")]
-        public string Deadline {get;set;}
-
         #nullable enable
         public string?[] AdminComments {get;set;}
         /* ************** */
         
-        [JsonIgnore]
-        public string AdminUsername {get;set;}
-        [JsonIgnore]
-        public Credentials AdminAccount {get;set;}
+        public int GroupId { get; set; }
 
-        //navigation properties:
-        public ICollection<SharedTaskAssignment> SharedTaskAssignments {get;set;}
+        [JsonIgnore]
+        public Group Group { get; set; }
+        
          
     }
 }

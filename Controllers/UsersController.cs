@@ -48,8 +48,8 @@ namespace _netCoreBackend.Controllers
         }
         
         
-        [HttpPost("SignUp")]
-        public  async Task<IActionResult> SignUp([FromForm]UserDTO user)
+        [HttpPost("signup")]
+        public  async Task<IActionResult> SignUp(UserDTO user)
         {
             
             //check if username exists
@@ -92,22 +92,30 @@ namespace _netCoreBackend.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] UserDTO user)
+        public async Task<IActionResult> Login(UserDTO user)
         {
+            if (!ValidMail(user.Email))
+            {
+                return new BadRequestObjectResult("That's not an email");
+            }
+            
             var requested = await _ctx.Users
                 .AsNoTracking()
                 .Include(u=> u.Credentials)
                 .SingleOrDefaultAsync(u => u.Email == user.Email);
-
+            
+            
             if (requested == null ) 
             {
                 return new NotFoundObjectResult("There's no user with that email. Sign up?");
             }
-          
+
+            string username = user.Username.Replace(" ", string.Empty);
+            
             var creds = requested.Credentials
-                .FirstOrDefault(cr => cr.Username == user.Username && cr.Password == user.Password);
-                
-            if ( !requested.Credentials.Any() )
+                .FirstOrDefault(cr => user.Username == cr.Username && cr.Password == user.Password);
+            
+            if ( !requested.Credentials.Any() || creds == null )
             {
                 return new BadRequestObjectResult("Wrong Credentials, try again please");
             }
@@ -199,7 +207,7 @@ namespace _netCoreBackend.Controllers
                 MailAddress mailAddress = new MailAddress(email);
                 return true;
             }
-            catch (FormatException)
+            catch (Exception)
             {
                 return false;
             }
