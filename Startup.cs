@@ -1,21 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using _netCoreBackend.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using _netCoreBackend.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -36,7 +28,6 @@ namespace _netCoreBackend
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            
             // JWT
 
             var jwtSection = Configuration.GetSection("JWTSettings");

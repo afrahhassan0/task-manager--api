@@ -28,9 +28,6 @@ namespace _netCoreBackend.Controllers
             var userGroups = _ctx.Groups
                 .AsNoTracking()
                 .Where(group => group.AdminUsername == username);
-            
-            
-
             return Ok(new
             {
                 groups = userGroups
@@ -66,13 +63,18 @@ namespace _netCoreBackend.Controllers
                 CreatedDate = DateTime.Now.ToString("MM/dd/yyyy")
             };
             
-
-            var groups = _ctx.Groups;
+            _ctx.Groups.Add(newGroup);
             
-            groups.Add(newGroup);
 
             try
             {
+                await _ctx.SaveChangesAsync();
+                //make the admin also a member of his own group
+                _ctx.Memberships.Add(new UserGroup()
+                {
+                    MemberUsername = username,
+                    GroupID = newGroup.GroupId,
+                });
                 await _ctx.SaveChangesAsync();
                 return Ok( newGroup );
             }

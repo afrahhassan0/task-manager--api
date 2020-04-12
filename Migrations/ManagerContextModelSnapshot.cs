@@ -186,10 +186,6 @@ namespace _netCoreBackend.Migrations
                 {
                     b.HasBaseType("_netCoreBackend.Models.Task");
 
-                    b.Property<string[]>("AdminComments")
-                        .IsRequired()
-                        .HasColumnType("text[]");
-
                     b.Property<string>("CredentialsUsername")
                         .HasColumnType("character varying(15)");
 

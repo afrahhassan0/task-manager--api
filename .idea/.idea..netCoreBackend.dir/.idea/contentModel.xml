@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="C:\Users\Magnus Bane\.Rider2019.3\system\extResources" t="IncludeRecursive" />
+    <e p="C:\Users\Magnus Bane\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_.19.00" t="ExcludeRecursive" />
+    <e p="C:\Users\Magnus Bane\Desktop\Task Manager\Api\.netCoreBackend" t="IncludeRecursive">
+      <e p=".netCoreBackend.csproj" t="IncludeRecursive" />
+      <e p="appsettings.Development.json" t="Include" />
+      <e p="appsettings.json" t="Include" />
+      <e p="bin" t="ExcludeRecursive" />
+      <e p="Controllers" t="Include">
+        <e p="GroupController.cs" t="Include" />
+        <e p="MembershipsController.cs" t="Include" />
+        <e p="PrivateTasksController.cs" t="Include" />
+        <e p="SharedTasksController.cs" t="Include" />
+        <e p="UsersController.cs" t="Include" />
+      </e>
+      <e p="Handlers" t="Include">
+        <e p="JWTSettings.cs" t="Include" />
+      </e>
+      <e p="Migrations" t="Include">
+        <e p="20200411181242_Init.cs" t="Include" />
+        <e p="20200411181242_Init.Designer.cs" t="Include" />
+        <e p="ManagerContextModelSnapshot.cs" t="Include" />
+      </e>
+      <e p="Models" t="Include">
+        <e p="Admin.cs" t="Include" />
+        <e p="Credentials.cs" t="Include" />
+        <e p="Enums" t="Include">
+          <e p="Role.cs" t="Include" />
+          <e p="Status.cs" t="Include" />
+        </e>
+        <e p="Group.cs" t="Include" />
+        <e p="GroupDTO.cs" t="Include" />
+        <e p="ManagerContext.cs" t="Include" />
+        <e p="Objects" t="Include">
+          <e p="Checklist.cs" t="Include" />
+        </e>
+        <e p="PrivateTask.cs" t="Include" />
+        <e p="SharedTasks.cs" t="Include" />
+        <e p="Task.cs" t="Include" />
+        <e p="User.cs" t="Include" />
+        <e p="UserDTO.cs" t="Include" />
+        <e p="UserGroup.cs" t="Include" />
+      </e>
+      <e p="obj" t="ExcludeRecursive">
+        <e p="Debug" t="Include">
+          <e p="netcoreapp3.1" t="Include">
+            <e p=".netCoreBackend.AssemblyInfo.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="packages" t="ExcludeRecursive" />
+      <e p="Program.cs" t="Include" />
+      <e p="Properties" t="Include">
+        <e p="launchSettings.json" t="Include" />
+      </e>
+      <e p="Startup.cs" t="Include" />
+    </e>
+  </component>
+</project>

@@ -9,10 +9,6 @@ namespace _netCoreBackend.Models
     {
         public SharedTasks(){}
 
-        #nullable enable
-        public string?[] AdminComments {get;set;}
-        /* ************** */
-        
         public int GroupId { get; set; }
 
         [JsonIgnore]

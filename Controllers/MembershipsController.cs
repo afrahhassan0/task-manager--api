@@ -57,7 +57,7 @@ namespace _netCoreBackend.Controllers
 
         }
 
-        [HttpGet("potentialMembers")]
+        [HttpGet("group")]
         public IActionResult GetOrgMembers()
         {
             string username = HttpContext.User.Identity.Name;
@@ -84,19 +84,19 @@ namespace _netCoreBackend.Controllers
             return Ok(colleaguesBrief);
         }
 
-        [HttpGet("groupMembers/{groupId:int}")]
+        [HttpGet("group/{groupId:int}")]
         public IActionResult GetMembers(int groupId)
         {
             string username = HttpContext.User.Identity.Name;
 
             var members = _ctx.Memberships
-                .Where(m => m.GroupID == groupId && m.MemberUsername != username);
+                .Where(m => m.GroupID == groupId );
 
             return Ok(members);
         }
             
 
-        [HttpPost("addMember/{groupId}")]
+        [HttpPost("group/addMember/{groupId:int}")]
         public async Task<IActionResult> RegisterOneMember(int groupId, string memberUsername)
         {
             string username = HttpContext.User.Identity.Name;
@@ -127,7 +127,7 @@ namespace _netCoreBackend.Controllers
         }
 
 
-        [HttpDelete("group/{groupId:int}/member/{memberUsername:string}")]
+        [HttpDelete("group/{groupId:int}/member/{memberUsername:alpha}")]
         public IActionResult DeleteMember(int groupId, string memberUsername)
         {
             string username = HttpContext.User.Identity.Name;

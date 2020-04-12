@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using _netCoreBackend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Task = _netCoreBackend.Models.Task;
 
 namespace _netCoreBackend.Controllers
 {
@@ -19,47 +21,35 @@ namespace _netCoreBackend.Controllers
             _ctx = ctx;
         }
 
-        [HttpGet("member/group/{id}")]
+        [HttpGet("{id:int}")]
         public IActionResult GetGroupTasks(int id)
         {
             string username = HttpContext.User.Identity.Name;
             
-            //check if user allowed to see those tasks: 
-            var member =  _ctx.Memberships.Find(username, id);
-
-            if (member == null)
-            {
-                return BadRequest();
-            }
-
-            var sharedTasks = _ctx.SharedTasks
-                .Where(st => st.GroupId == id);
-
-            return Ok(sharedTasks);
-        }
-
-        [HttpGet("admin/group/{id:int}")]
-        public IActionResult GetAdminGroups(int id)
-        {
-            string username = HttpContext.User.Identity.Name;
-
-            var group = _ctx.Groups.Find(id);
+            var member = 
+                _ctx.Memberships
+                    .FirstOrDefault( member => member.MemberUsername == username && member.GroupID == id );
             
-            //if group doesnt exists or exists and does not belong to user
-            if (group == null || group.AdminUsername != username)
+            if ( member == null )
             {
                 return Unauthorized();
             }
 
-            _ctx.Entry(group)
-                .Collection(g => g.SharedTasks)
-                .Load();
+            var group = _ctx.Groups.Find(id);
 
-            return Ok(group);
+            var sharedTasks = _ctx.SharedTasks
+                .AsNoTracking()
+                .Where(st => st.GroupId == id);
+
+            return Ok(new
+            {
+                tasks = sharedTasks,
+                belongsTo = group
+            });
         }
 
         [HttpPost("group/{id:int}")]
-        public async Task<IActionResult> CreateTask(int id, SharedTasks task)
+        public IActionResult CreateTask(int id, SharedTasks task)
         {
             string username = HttpContext.User.Identity.Name;
 
@@ -71,10 +61,11 @@ namespace _netCoreBackend.Controllers
             {
                 return Unauthorized();
             }
-            
-            group.SharedTasks.Add(task);
 
-            await _ctx.SaveChangesAsync();
+            task.GroupId = id;
+            _ctx.SharedTasks.Add(task);
+
+            _ctx.SaveChanges();
 
             return Ok(task);
         }
@@ -103,16 +94,30 @@ namespace _netCoreBackend.Controllers
             if (index == -1)
                 return BadRequest();
 
-            group.SharedTasks[index].Title = task.Title;
-            group.SharedTasks[index].Description = task.Description;
-            group.SharedTasks[index].Checklists = task.Checklists;
-            group.SharedTasks[index].AdminComments = task.AdminComments;
+            group.SharedTasks[index] = task;
             
             await _ctx.SaveChangesAsync();
 
             return Ok(task);
         }
-        
-        
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteTask(int id)
+        {
+            string username = HttpContext.User.Identity.Name;
+
+            var task = _ctx.SharedTasks
+                .Include(t => t.Group)
+                .FirstOrDefault(t => t.TaskId == id && t.Group.AdminUsername == username);
+
+            if (task == null)
+                return NotFound();
+
+            _ctx.SharedTasks.Remove(task);
+
+            await _ctx.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

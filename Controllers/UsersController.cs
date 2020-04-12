@@ -11,8 +11,10 @@ using System.Security.Claims;
 using System.Text;
 using _netCoreBackend.Handlers;
 using _netCoreBackend.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Task = _netCoreBackend.Models.Task;
 
 
 namespace _netCoreBackend.Controllers
@@ -32,13 +34,32 @@ namespace _netCoreBackend.Controllers
             _jwtSettings = jwtSettings.Value;
         }
 
-        [HttpGet("{id}") , ActionName(nameof(GetUser))]
-        public async Task<ActionResult<User>> GetUser(int id)
+        
+        [Authorize]
+        [HttpGet("authorization/{groupId:int}")]
+        public IActionResult GetAuth(int groupId)
         {
-            var user = await _ctx.Users
+            string username = HttpContext.User.Identity.Name;
+
+            var group = _ctx.Groups.Find(groupId);
+            if (group == null)
+                return NotFound();
+
+            string roleInGroup = (group.AdminUsername == username) ? "ADMIN" : "MEMBER";
+
+            return Ok(new
+            {
+                role = roleInGroup
+            });
+        }
+        
+        
+        [HttpGet("{id}") , ActionName(nameof(GetUser))]
+        public ActionResult<User> GetUser(int id)
+        {
+            var user = _ctx.Users
                 .Include(u => u.Credentials)
-                .Where(u=> u.UserId == id)
-                .FirstOrDefaultAsync();
+                .FirstOrDefault( u=> u.UserId == id);
 
             if (user == null)
             {
@@ -49,7 +70,7 @@ namespace _netCoreBackend.Controllers
         
         
         [HttpPost("signup")]
-        public  async Task<IActionResult> SignUp(UserDTO user)
+        public  IActionResult SignUp(UserDTO user)
         {
             
             //check if username exists
@@ -72,16 +93,9 @@ namespace _netCoreBackend.Controllers
 
             var newUser = CreateUser(user);
 
-            try
-            {
-                _ctx.Users.Add(newUser);
-                await _ctx.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            _ctx.Users.Add(newUser);
+            _ctx.SaveChanges();
+            
             
             var jwtToken = GenerateAccessToken(user.Email, user.Username);
             Response.Headers.Add("Authentication" , jwtToken);
